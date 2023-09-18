@@ -1,4 +1,4 @@
-package org.example.config;
+package org.example.annotation;
 
 public class AppConfig {
     private String apiKey;

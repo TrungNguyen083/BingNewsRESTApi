@@ -1,54 +1,37 @@
 package org.example.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sun.net.httpserver.HttpHandler;
-import org.example.config.AppConfig;
+import org.example.ORM.CrudRepositoryImp;
+import org.example.annotation.Controller;
+import org.example.annotation.GetMapping;
+import org.example.annotation.PathVariable;
 import org.example.models.AdArticle;
-import org.example.services.AdArticleService;
-import org.example.untils.ResponseUtils;
+import org.example.repositories.AdArticleRepository;
 
 import java.util.List;
 
+@Controller
 public class AdArticleController {
-    private final AdArticleService adArticleService;
-    private final AppConfig appConfig;
-
-    public AdArticleController(AdArticleService adArticleService, AppConfig appConfig) {
-        this.adArticleService = adArticleService;
-        this.appConfig = appConfig;
+    AdArticleRepository adArticleRepository;
+    ObjectMapper objectMapper;
+    public AdArticleController() {
+        adArticleRepository = new AdArticleRepository(new CrudRepositoryImp<>());
+        objectMapper = new ObjectMapper();
     }
 
-    public HttpHandler getAllAdArticle() {
-        return exchange -> {
-            // Fetch all users from the service
-            try {
-                List<AdArticle> adArticles = adArticleService.getAllAds();
-                ObjectMapper objectMapper = new ObjectMapper();
-                String json = objectMapper.writeValueAsString(adArticles);
-                ResponseUtils.sendJsonResponse(exchange, 200, json);
-            } catch (Exception e) {
-                ResponseUtils.sendErrorResponse(exchange, 500, "Internal Server Error");
-            }
-        };
+    @GetMapping(value = "/adArticles")
+    public String getAdArticles() throws Exception {
+        System.out.println("Method 1");
+        List<AdArticle> adArticleList = adArticleRepository.getAllArticle();
+        return objectMapper.writeValueAsString(adArticleList);
     }
 
-    public HttpHandler getAdArticleById() {
-        return exchange -> {
-            // Extract user ID from the request
-            String adArticleID = String.valueOf(exchange.getRequestURI().getPath().split("/")[3]);
-            // Fetch user by ID from the service
-            try {
-                List<AdArticle> adArticleList = adArticleService.findAd(x -> x.getGuid().equals(adArticleID));
-                ObjectMapper objectMapper = new ObjectMapper();
-                String json = objectMapper.writeValueAsString(adArticleList);
-                if (adArticleList != null) {
-                    ResponseUtils.sendJsonResponse(exchange, 200, json);
-                } else {
-                    ResponseUtils.sendErrorResponse(exchange, 404, "AdArticle not found");
-                }
-            } catch (Exception e) {
-                ResponseUtils.sendErrorResponse(exchange, 500, "Internal Server Error");
-            }
-        };
+    @GetMapping(value = "/adArticles/{id}")
+    public String findAdArticle(@PathVariable("id") String id) throws Exception {
+        System.out.println("Method 2");
+        List<AdArticle> adArticleList = adArticleRepository.findArticle(x -> x.getGuid().equals(id));
+        return objectMapper.writeValueAsString(adArticleList);
     }
+
+
 }
